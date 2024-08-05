@@ -15,5 +15,5 @@
 4. Type in `nodemon api` to start the API. It will be available at `http://localhost:2222`.
 
 ## Or deployed link
-
+(In this deployed demo, I use the provided API)
 You can view the deployed project at [https://interview-assignment-ten.vercel.app/](https://interview-assignment-ten.vercel.app/)
