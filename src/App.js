@@ -3,14 +3,13 @@ import { useEffect, useState } from 'react';
 
 async function fetchUsers(pageNum, setUsers) {
   try {
-      const response = await fetch(`https://randomuser.me/api/?page=${pageNum}&results=10`, {
-          method: "GET",
+      const response = await fetch(`https://randomuser.me/api/?results=100`, {
+        method: "GET",
       });
       if (!response.ok) {
-          console.error("error:", response.status);
+        console.error("error:", response.status);
       };
       const result = await response.json();
-      console.log(result.results);
       setUsers(result.results);
   } catch (error) {
       console.error("Error while fetching products: ", error.message);
@@ -19,6 +18,7 @@ async function fetchUsers(pageNum, setUsers) {
 
 function App() {
   const [users, setUsers] = useState([]);
+  const [viewedUsers, setViewedUsers] = useState([]);
   const [pageNum, setPageNum] = useState(1);
   const [order, setOrder] = useState("Order");
   const [property, setProperty] = useState("Property");
@@ -27,28 +27,36 @@ function App() {
 
   useEffect(() => {
     fetchUsers(pageNum, setUsers);
+  }, []);
+  useEffect(() => {
+    if (users.length > 0) { 
+      let result = [];
+      const slicedList = users.slice((pageNum-1)*10, (pageNum-1)*10 + 9);
+      result.push(...slicedList);
+      setViewedUsers(result);
+    }
   }, [pageNum]);
 
   function sortUsername(order) { 
     if (order === 'Ascending') {
-      setUsers([...users].sort((a, b) =>
+      setViewedUsers([...viewedUsers].sort((a, b) =>
         a.login.username > b.login.username ? 1 : -1,
       ))
     } 
     if (order === "Descending") {
-      setUsers([...users].sort((a, b) =>
+      setViewedUsers([...viewedUsers].sort((a, b) =>
         a.login.username > b.login.username ? -1 : 1,
       ))
     };
   };
   function sortName(order) { 
     if (order === 'Ascending') {
-      setUsers([...users].sort((a, b) =>
+      setViewedUsers([...viewedUsers].sort((a, b) =>
         a.name.first > b.name.first ? 1 : -1,
       ))
     } 
     if (order === "Descending") {
-      setUsers([...users].sort((a, b) =>
+      setViewedUsers([...viewedUsers].sort((a, b) =>
         a.name.first > b.name.first ? -1 : 1,
       ))
     };
@@ -87,7 +95,7 @@ function App() {
             </th>)
           })}
         </tr>
-        {users.map((user) => {
+        {viewedUsers.map((user) => {
           return (
             <tr>
               <td>{user.name.title} {user.name.first} {user.name.last}</td>
@@ -103,11 +111,11 @@ function App() {
         )}
         <a className={pageNum == 1 && "active"} onClick={() => setPageNum(1)}>1</a> 
         &nbsp;
-        {pageNum > 1 && pageNum < 100 ? (<a className='active'>{pageNum}</a>) : (<a onClick={() => setPageNum(50)}>50</a>)} 
+        {pageNum > 1 && pageNum < 10 ? (<a className='active'>{pageNum}</a>) : (<a onClick={() => setPageNum(5)}>5</a>)} 
         &nbsp;
-        <a className={pageNum == 100 && "active"} onClick={() => setPageNum(100)}>100</a>
+        <a className={pageNum == 10 && "active"} onClick={() => setPageNum(10)}>10</a>
         &nbsp;
-        {pageNum < 100 && (
+        {pageNum < 10 && (
           <a onClick={() => setPageNum(pageNum + 1)}>Next</a>
         )}
       </div>
