@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 async function fetchUsers(setUsers) {
   try {
-    const response = await fetch(`https://randomuser.me/api/?results=100`);
+    const response = await fetch(`https://randomuser.me/api/?results=100`); //http://localhost:2222/api?results=20 for local API
     if (!response.ok) {
       console.error("Error:", response.error);
     }
