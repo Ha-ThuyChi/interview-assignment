@@ -1,20 +1,18 @@
 import './App.css';
 import { useEffect, useState } from 'react';
 
-async function fetchUsers(pageNum, setUsers) {
+async function fetchUsers(setUsers) {
   try {
-      const response = await fetch(`https://randomuser.me/api/?results=100`, {
-        method: "GET",
-      });
-      if (!response.ok) {
-        console.error("error:", response.status);
-      };
-      const result = await response.json();
-      setUsers(result.results);
+    const response = await fetch(`https://randomuser.me/api/?results=100`);
+    if (!response.ok) {
+      console.error("Error:", response.error);
+    }
+    const result = await response.json();
+    setUsers(result.results);
   } catch (error) {
-      console.error("Error while fetching products: ", error.message);
+    console.error("Error while fetching users: ", error.message);
   }
-};
+}
 
 function App() {
   const [users, setUsers] = useState([]);
@@ -24,52 +22,55 @@ function App() {
   const [property, setProperty] = useState("Property");
   const headers = ["Full name", "Username", "Thumbnail icon"];
 
-
   useEffect(() => {
-    fetchUsers(pageNum, setUsers);
+    fetchUsers(setUsers);
   }, []);
-  useEffect(() => {
-    if (users.length > 0) { 
-      let result = [];
-      const slicedList = users.slice((pageNum-1)*10, (pageNum-1)*10 + 9);
-      result.push(...slicedList);
-      setViewedUsers(result);
-    }
-  }, [pageNum]);
 
-  function sortUsername(order) { 
+  useEffect(() => {
+    if (users.length > 0) {
+      const startIndex = (pageNum - 1) * 10;
+      const endIndex = startIndex + 10;
+      const slicedUsers = users.slice(startIndex, endIndex);
+      setViewedUsers(slicedUsers);
+    }
+  }, [pageNum, users]);
+
+  function sortUsername(order) {
     if (order === 'Ascending') {
       setViewedUsers([...viewedUsers].sort((a, b) =>
-        a.login.username > b.login.username ? 1 : -1,
-      ))
-    } 
+        a.login.username.localeCompare(b.login.username)
+      ));
+    }
     if (order === "Descending") {
       setViewedUsers([...viewedUsers].sort((a, b) =>
-        a.login.username > b.login.username ? -1 : 1,
-      ))
-    };
-  };
-  function sortName(order) { 
+        b.login.username.localeCompare(a.login.username)
+      ));
+    }
+  }
+
+  function sortName(order) {
     if (order === 'Ascending') {
       setViewedUsers([...viewedUsers].sort((a, b) =>
-        a.name.first > b.name.first ? 1 : -1,
-      ))
-    } 
+        a.name.first.localeCompare(b.name.first)
+      ));
+    }
     if (order === "Descending") {
       setViewedUsers([...viewedUsers].sort((a, b) =>
-        a.name.first > b.name.first ? -1 : 1,
-      ))
-    };
-  };
+        b.name.first.localeCompare(a.name.first)
+      ));
+    }
+  }
+
   function handleSorting(e) {
     e.preventDefault();
     if (property === "Full name") {
       sortName(order);
-    } 
+    }
     if (property === "Username") {
       sortUsername(order);
-    };
+    }
   }
+
   return (
     <div className='page'>
       <div className='sort'>
@@ -88,35 +89,36 @@ function App() {
         <button onClick={e => handleSorting(e)}>Sort</button>
       </div>
       <table>
-        <tr>
-          {headers.map((header) => {
-            return (<th>
-              {header}
-            </th>)
-          })}
-        </tr>
-        {viewedUsers.map((user) => {
-          return (
-            <tr>
+        <thead>
+          <tr>
+            {headers.map((header) => (
+              <th key={header}>{header}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {viewedUsers.map((user) => (
+            <tr key={user.login.username}>
               <td>{user.name.title} {user.name.first} {user.name.last}</td>
               <td>{user.login.username}</td>
-              <td><img src={user.picture.thumbnail}/></td>
+              <td><img src={user.picture.thumbnail} alt="Thumbnail" /></td>
             </tr>
-          )}
-        )}
+          ))}
+        </tbody>
       </table>
       <div className='pagination'>
         {pageNum > 1 && (
-          <a onClick={() => setPageNum(pageNum - 1)}>Previous</a>
+          <button onClick={() => setPageNum(pageNum - 1)}>Previous</button>
         )}
-        <a className={pageNum == 1 && "active"} onClick={() => setPageNum(1)}>1</a> 
-        &nbsp;
-        {pageNum > 1 && pageNum < 10 ? (<a className='active'>{pageNum}</a>) : (<a onClick={() => setPageNum(5)}>5</a>)} 
-        &nbsp;
-        <a className={pageNum == 10 && "active"} onClick={() => setPageNum(10)}>10</a>
-        &nbsp;
+        <button onClick={() => setPageNum(1)} className={pageNum === 1 ? 'active' : ''}>1</button> 
+        {pageNum > 1 && pageNum < 10 ? (
+          <button className='active'>{pageNum}</button>
+        ) : (
+          <button onClick={() => setPageNum(5)}>5</button>
+        )} 
+        <button onClick={() => setPageNum(10)} className={pageNum === 10 ? 'active' : ''}>10</button>
         {pageNum < 10 && (
-          <a onClick={() => setPageNum(pageNum + 1)}>Next</a>
+          <button onClick={() => setPageNum(pageNum + 1)}>Next</button>
         )}
       </div>
     </div>
